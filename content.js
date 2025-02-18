@@ -23,24 +23,23 @@ async function extractProductData() {
 
       console.log("Attempting to fetch from API, attempt:", attempt);
       console.log("Request URL:", API_URL);
-      console.log(
-        "Request payload size:",
-        new Blob([
-          JSON.stringify({
-            text: textContent.substring(0, 5000),
-            images: images.slice(0, 10),
-            url: url,
-          }),
-        ]).size,
-        "bytes"
-      );
+
+      // Test the API endpoint first
+      try {
+        const healthCheck = await fetch(API_URL, {
+          method: "GET",
+          mode: "cors",
+        });
+        console.log("Health check response:", await healthCheck.text());
+      } catch (healthError) {
+        console.error("Health check failed:", healthError.toString());
+      }
 
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Origin: chrome.runtime.getURL(""),
         },
         mode: "cors",
         body: JSON.stringify({
@@ -50,30 +49,29 @@ async function extractProductData() {
         }),
       });
 
-      console.log("Response status:", response.status);
-      console.log("Response headers:", [...response.headers.entries()]);
+      console.log("Response received:", {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries([...response.headers]),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Error response body:", errorText);
         throw new Error(
           `HTTP error! status: ${response.status}, body: ${errorText}`
         );
       }
 
       const data = await response.json();
-      console.log("Successful response data:", data);
       return data;
     } catch (error) {
-      console.error(`Attempt ${attempt} details:`, {
-        error: error.message,
+      console.error(`Attempt ${attempt} failed:`, {
+        message: error.toString(),
         stack: error.stack,
-        type: error.name,
+        name: error.name,
       });
+
       if (attempt < MAX_RETRIES) {
-        console.log(
-          `Waiting ${RETRY_DELAY}ms before retry ${attempt + 1}/${MAX_RETRIES}`
-        );
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         return fetchWithRetry(attempt + 1);
       }
