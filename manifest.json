@@ -6,7 +6,13 @@
     "icons": {
         "128": "icons/unicornicon.png"
     },
-    "permissions": ["activeTab", "scripting", "storage", "tabs"],
+    "permissions": [
+        "activeTab",
+        "scripting", 
+        "storage",
+        "tabs",
+        "https://materialcompanion-49s81aslk-maybeitsjadens-projects.vercel.app/*"
+    ],
     "host_permissions": ["<all_urls>"],
     "background": {
       "service_worker": "background.js"

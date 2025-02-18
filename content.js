@@ -42,7 +42,6 @@ async function extractProductData() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
         mode: "cors",
         body: JSON.stringify({
@@ -58,6 +57,7 @@ async function extractProductData() {
           status: response.status,
           statusText: response.statusText,
           body: errorText,
+          headers: Object.fromEntries([...response.headers]),
         });
         throw new Error(
           `HTTP error! status: ${response.status}, body: ${errorText}`
@@ -71,7 +71,7 @@ async function extractProductData() {
         message: error.message,
         stack: error.stack,
         name: error.name,
-        toString: error.toString(),
+        fullError: error,
       });
 
       if (attempt < MAX_RETRIES) {
