@@ -21,9 +21,8 @@ async function extractProductData() {
       const images = Array.from(document.images).map((img) => img.src);
       const url = window.location.href;
 
-      const timeout = 30000;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      console.log("Attempting to fetch from API, attempt:", attempt);
+      console.log("Request URL:", API_URL);
 
       const response = await fetch(API_URL, {
         method: "POST",
@@ -32,36 +31,28 @@ async function extractProductData() {
           Accept: "application/json",
         },
         mode: "cors",
-        credentials: "omit",
-        signal: controller.signal,
         body: JSON.stringify({
-          text: textContent,
-          images: images,
+          text: textContent.substring(0, 5000), // Limit text size
+          images: images.slice(0, 10), // Limit number of images
           url: url,
         }),
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${errorText}`
+        );
       }
 
       const data = await response.json();
-      console.log("Received data from backend:", data);
-
-      data.contact = "";
-      chrome.storage.local.set({ scrapedData: data });
       return data;
     } catch (error) {
       console.error(`Attempt ${attempt} failed:`, error);
-
       if (attempt < MAX_RETRIES) {
-        console.log(`Retrying... Attempt ${attempt + 1}/${MAX_RETRIES}`);
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         return fetchWithRetry(attempt + 1);
       }
-
       throw error;
     }
   }
