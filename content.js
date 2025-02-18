@@ -17,23 +17,26 @@ async function extractProductData() {
 
   async function fetchWithRetry(attempt = 1) {
     try {
-      const textContent = document.body.innerText;
-      const images = Array.from(document.images).map((img) => img.src);
+      // Get a smaller sample of text and images
+      const textContent = document.body.innerText.substring(0, 1000); // Just first 1000 chars
+      const images = Array.from(document.images)
+        .slice(0, 3)
+        .map((img) => img.src); // Just first 3 images
       const url = window.location.href;
 
       console.log("Attempting to fetch from API, attempt:", attempt);
       console.log("Request URL:", API_URL);
-
-      // Test the API endpoint first
-      try {
-        const healthCheck = await fetch(API_URL, {
-          method: "GET",
-          mode: "cors",
-        });
-        console.log("Health check response:", await healthCheck.text());
-      } catch (healthError) {
-        console.error("Health check failed:", healthError.toString());
-      }
+      console.log(
+        "Payload size:",
+        new Blob([
+          JSON.stringify({
+            text: textContent,
+            images,
+            url,
+          }),
+        ]).size,
+        "bytes"
+      );
 
       const response = await fetch(API_URL, {
         method: "POST",
@@ -43,20 +46,19 @@ async function extractProductData() {
         },
         mode: "cors",
         body: JSON.stringify({
-          text: textContent.substring(0, 5000),
-          images: images.slice(0, 10),
-          url: url,
+          text: textContent,
+          images,
+          url,
         }),
-      });
-
-      console.log("Response received:", {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries([...response.headers]),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error("Error response:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
         throw new Error(
           `HTTP error! status: ${response.status}, body: ${errorText}`
         );
@@ -66,9 +68,10 @@ async function extractProductData() {
       return data;
     } catch (error) {
       console.error(`Attempt ${attempt} failed:`, {
-        message: error.toString(),
+        message: error.message,
         stack: error.stack,
         name: error.name,
+        toString: error.toString(),
       });
 
       if (attempt < MAX_RETRIES) {
