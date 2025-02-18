@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Material Companion</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="popup-container">
+      <div class="header">
+        <h2>Material Data</h2>
+        <button id="scanBtn" class="scan-btn" title="Scan Page">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <path
+              fill="#28a745"
+              d="M8 2a6 6 0 0 0-6 6h2a4 4 0 1 1 4 4v2a6 6 0 1 0 0-12z"
+            />
+          </svg>
+          Scan Page
+        </button>
+      </div>
+      <div id="output"></div>
+      <button id="copyBtn" class="btn" disabled>Copy Data</button>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

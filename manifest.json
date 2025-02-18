@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "name": "Material Companion",
+    "version": "1.0",
+    "description": "AI-powered Chrome extension to scrape product details.",
+    "icons": {
+        "128": "icons/unicornicon.png"
+    },
+    "permissions": ["activeTab", "scripting", "storage", "tabs"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_icon": "icons/unicornicon.png",
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ]
+  }
+  
